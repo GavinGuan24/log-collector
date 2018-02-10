@@ -21,6 +21,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+
+		<log-collector-core.version>1.0.0</log-collector-core.version>
 	</properties>
 
 	<dependencies>
@@ -38,7 +40,7 @@
 		<dependency>
 			<groupId>org.gavin.log</groupId>
 			<artifactId>log-collector-core</artifactId>
-			<version>1.0.0</version>
+			<version>${log-collector-core.version}</version>
 		</dependency>
 
 	</dependencies>
