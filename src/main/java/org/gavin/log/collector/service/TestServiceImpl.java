@@ -1,6 +1,6 @@
-package org.gavin.logcollector.service;
+package org.gavin.log.collector.service;
 
-import org.gavin.logCollector.service.log.LogReceiver;
+import org.gavin.log.collector.service.log.LogReceiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

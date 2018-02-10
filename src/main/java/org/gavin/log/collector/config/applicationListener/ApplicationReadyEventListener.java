@@ -1,6 +1,6 @@
-package org.gavin.logcollector.config.applicationListener;
+package org.gavin.log.collector.config.applicationListener;
 
-import org.gavin.logCollector.service.log.LogReceiver;
+import org.gavin.log.collector.service.log.LogReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

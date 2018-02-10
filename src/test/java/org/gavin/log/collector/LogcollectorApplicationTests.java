@@ -1,4 +1,4 @@
-package org.gavin.logcollector;
+package org.gavin.log.collector;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

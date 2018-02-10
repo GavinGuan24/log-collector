@@ -1,4 +1,4 @@
-package org.gavin.logcollector.config;
+package org.gavin.log.collector.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
-package org.gavin.logcollector;
+package org.gavin.log.collector;
 
-import org.gavin.logcollector.config.YmlConfig;
-import org.gavin.logcollector.config.applicationListener.ApplicationReadyEventListener;
+import org.gavin.log.collector.config.YmlConfig;
+import org.gavin.log.collector.config.applicationListener.ApplicationReadyEventListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

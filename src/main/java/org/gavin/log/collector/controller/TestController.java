@@ -1,6 +1,6 @@
-package org.gavin.logcollector.controller;
+package org.gavin.log.collector.controller;
 
-import org.gavin.logcollector.service.TestServiceImpl;
+import org.gavin.log.collector.service.TestServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
