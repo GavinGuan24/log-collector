@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <contextName>Log Collector</contextName>
+    <springProperty scope="context" name="logLevel" source="log_level"/>
+    <springProperty scope="context" name="logPath" source="log_path"/>
+    <springProperty scope="context" name="logFilename" source="log_filename"/>
+
+    <!--输出到控制台-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!--<level>ERROR</level>-->
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--输出到文件-->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logPath}/${logFilename}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logPath}/${logFilename}%d{_yyyy-MM-dd}.log</fileNamePattern>
+            <!--日志保存时长(天) 自动删除旧日志-->
+            <maxHistory>90</maxHistory>
+            <!--日志总大小上限 自动删除旧日志, GB, MB-->
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${logLevel}">
+        <appender-ref ref="console" />
+        <appender-ref ref="file" />
+    </root>
+
+
+    <!--日志级别从低到高分为TRACE < DEBUG < INFO < WARN < ERROR < FATAL 大小写均可-->
+    <!--多环境配置 建议使用 springProperty ,不推荐 springProfile -->
+    <!--配置参考文: https://www.cnblogs.com/wangdaijun/p/7054114.html -->
+    <!--配置参考文: http://blog.csdn.net/vitech/article/details/53812137-->
+
+</configuration>

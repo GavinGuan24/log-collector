@@ -1,0 +1,35 @@
+spring:
+  profiles:
+      active: dev
+
+server:
+  port: 8600
+
+logging:
+  config: classpath:config/logback-spring.xml
+log_filename: LogCollector_Log
+
+
+
+---
+spring:
+  profiles: dev
+
+log_level: INFO
+log_path: /Users/gavinguan/Desktop/youCanDeleteMe
+
+ymlConfig:
+  context: develop
+
+---
+spring:
+  profiles: prod
+
+log_level: INFO
+log_path: /Users/gavinguan/Desktop/youCanDeleteMe
+
+ymlConfig:
+  context: product
+
+
+
