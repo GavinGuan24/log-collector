@@ -10,7 +10,6 @@ logging:
 log_filename: LogCollector_Log
 
 
-
 ---
 spring:
   profiles: dev
@@ -20,16 +19,18 @@ log_path: /Users/gavinguan/Desktop/youCanDeleteMe
 
 ymlConfig:
   context: develop
+  hawkeyeRepositoryPath: /Users/gavinguan/Desktop/youCanDeleteMe/hawkeye
 
 ---
 spring:
   profiles: prod
 
 log_level: INFO
-log_path: /Users/gavinguan/Desktop/youCanDeleteMe
+log_path: youCanDeleteMe
 
 ymlConfig:
   context: product
+  hawkeyeRepositoryPath: /Users/gavinguan/Desktop/youCanDeleteMe/hawkeye
 
 
 

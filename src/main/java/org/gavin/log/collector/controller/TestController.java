@@ -25,7 +25,6 @@ public class TestController {
 
     @RequestMapping(value = "/log", method = RequestMethod.GET)
     public String server() throws Exception {
-        testService.closeLogReceiver();
         return "0";
     }
 

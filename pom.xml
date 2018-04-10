@@ -23,6 +23,7 @@
 		<java.version>1.8</java.version>
 
 		<log-collector-core.version>1.0.0</log-collector-core.version>
+		<hawkeye.version>1.0.0</hawkeye.version>
 	</properties>
 
 	<dependencies>
@@ -41,6 +42,12 @@
 			<groupId>org.gavin.log</groupId>
 			<artifactId>log-collector-core</artifactId>
 			<version>${log-collector-core.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.gavin.search</groupId>
+			<artifactId>hawkeye</artifactId>
+			<version>${hawkeye.version}</version>
 		</dependency>
 
 	</dependencies>

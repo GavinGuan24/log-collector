@@ -17,14 +17,14 @@ import org.springframework.stereotype.Service;
 @Service("TestServiceImpl")
 public class TestServiceImpl {
 
-    @Autowired
-    private LogReceiver logReceiver;
-
-    public void closeLogReceiver() {
-        try {
-            logReceiver.shutdown();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    @Autowired
+//    private LogReceiver logReceiver;
+//
+//    public void closeLogReceiver() {
+//        try {
+//            logReceiver.shutdown();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
