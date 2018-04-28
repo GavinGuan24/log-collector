@@ -11,5 +11,18 @@ package org.gavin.log.collector.service.log;
  */
 public interface ILogRepositoryService {
 
+    /**
+     * 永久关闭服务, 不可恢复, 这里是一个通知, 内部会异步停用
+     */
     void shutdown();
+
+    /**
+     * 与pause()操作相反
+     */
+    void resume();
+
+    /**
+     * 暂停log收集与index化的进程, 这里是一个通知, 内部会异步暂停
+     */
+    void pause();
 }

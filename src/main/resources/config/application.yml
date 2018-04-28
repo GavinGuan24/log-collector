@@ -20,6 +20,7 @@ log_path: /Users/gavinguan/Desktop/youCanDeleteMe
 ymlConfig:
   context: develop
   hawkeyeRepositoryPath: /Users/gavinguan/Desktop/youCanDeleteMe/hawkeye
+  absorbLogCoreThreadSize: 2
 
 ---
 spring:
@@ -31,6 +32,7 @@ log_path: youCanDeleteMe
 ymlConfig:
   context: product
   hawkeyeRepositoryPath: /Users/gavinguan/Desktop/youCanDeleteMe/hawkeye
+  absorbLogCoreThreadSize: 4
 
 
 

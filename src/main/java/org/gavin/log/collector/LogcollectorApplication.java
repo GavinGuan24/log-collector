@@ -30,8 +30,8 @@ public class LogcollectorApplication {
 	    return "Log Collector is Running ─=≡Σ(((つ•̀ω•́)つ";
 	}
 
-	@RequestMapping(value = "/info", method = {RequestMethod.GET, RequestMethod.POST})
-	public Object info() throws Exception {
+	@RequestMapping(value = "/debugInfo", method = {RequestMethod.GET, RequestMethod.POST})
+	public Object debugInfo() throws Exception {
 
 		return ymlConfig.getContext();
 	}
