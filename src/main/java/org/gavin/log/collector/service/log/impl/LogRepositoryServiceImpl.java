@@ -137,9 +137,9 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
             if (logReceiver != null) {
                 //尝试获取16条log数据, 并index化
                 List<LogDocument> logDocumentList = logReceiver.pollLogs(16);
-                for (LogDocument logDocument : logDocumentList) {
+                if (logDocumentList.size() > 0) {
                     try {
-                        logRepository.addDocument(logDocument);
+                        logRepository.addDocuments(logDocumentList);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
