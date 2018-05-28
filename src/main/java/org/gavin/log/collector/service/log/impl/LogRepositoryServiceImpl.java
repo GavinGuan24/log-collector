@@ -113,6 +113,8 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
         }
 
         //启动至少 2个线程处理 logReceiver 中的日志
+        //充分利用 logReceiver.pollLogs() 与 logRepository.addDocuments()的时间差
+        //logRepository.addDocuments() 是锁同步的, 是日志写入的硬瓶颈, 不可被优化
         if (!(absorbLogThreadSize != null && absorbLogThreadSize >= 2)) absorbLogThreadSize = 2;
         for (int i = 0; i < absorbLogThreadSize; i++) {
             new Thread(this::absorbLogBuffer).start();
@@ -131,12 +133,14 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
         }
     }
 
+    //该方法的调用使用了最少2个线程
+    //logRepository.addDocuments方法是锁同步的, 如果只用1个线程,
     private void absorbLogBuffer() {
         incrementAbsorbLogCoreThreadCount();
         while (!needShutdown) {
             if (logReceiver != null) {
-                //尝试获取16条log数据, 并index化
-                List<LogDocument> logDocumentList = logReceiver.pollLogs(16);
+                //尝试获取8条log数据, 并index化
+                List<LogDocument> logDocumentList = logReceiver.pollLogs(8);
                 if (logDocumentList.size() > 0) {
                     try {
                         logRepository.addDocuments(logDocumentList);
