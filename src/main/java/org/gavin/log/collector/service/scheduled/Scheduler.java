@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  * Created by gavinguan on 2018/2/2 13:28.
  * Copyright © 2018 gavinguan. All rights reserved.
  */
-@Component
+//@Component
 public class Scheduler {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());

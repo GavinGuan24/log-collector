@@ -68,7 +68,7 @@ public class LogRepository extends StandardRepository<LogDocument> {
         LoggingEventVO loggingEventVO = logDocument.getLoggingEventVO();
 
         try {
-            loggingEventVO.setMessage(highlighter.getBestFragment(analyzer, messageKey, document.get(messageKey)));
+            loggingEventVO.setMessage(standardHighLightOptimizer(highlighter.getBestFragment(analyzer, messageKey, document.get(messageKey)), Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE));
         } catch (Exception e) {
             e.printStackTrace();
         }

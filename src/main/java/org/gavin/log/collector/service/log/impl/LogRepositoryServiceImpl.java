@@ -1,11 +1,14 @@
 package org.gavin.log.collector.service.log.impl;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.lucene.index.Term;
 import org.gavin.log.collector.service.log.LogDocument;
 import org.gavin.log.collector.service.log.LogReceiver;
 import org.gavin.log.collector.service.log.ILogRepositoryService;
 import org.gavin.log.collector.service.log.logRepository.LogRepository;
+import org.gavin.search.hawkeye.query.PagingQuery;
 import org.gavin.search.hawkeye.query.QueryTemplateBuilder;
+import org.gavin.search.hawkeye.result.PagingQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,7 +110,7 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
     @PostConstruct
     private void startRunLoop() {
         if (logReceiver == null) {
-            logger.error("LogReceiver 未注入");
+            logger.error("LogReceiver can't autowired");
             return;
         }
         try {
@@ -117,7 +120,7 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
             logRepository = new LogRepository(repositoryPath);
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("LogRepository rebuild error");
+            logger.error("LogRepository open failed");
             return;
         }
 
@@ -143,6 +146,17 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
                 List<LogDocument> logDocumentList = logReceiver.pollLogs(64);
                 if (pauseCollect) continue;
                 try {
+                    /** TODO: 这里休眠是为了节省cpu给别的线程
+                     * 不仅仅是为了 log-conllector的线程, 包括其他程序的.
+                     * 我注意到如果不休眠, cpu将会几乎被 absorbLogBuffer 吃掉,
+                     * 而休眠会很好解决这个问题. 在测试时, 1000ms 内的休眠结果对cpu占用会骤降,
+                     * 且结果近似, 所以在同时考虑到大量日志爆发的场景, 我决定将该数据设置为15ms.
+                     * 当然, 15ms 也是参考项目[hawkeye](https://github.com/GavinGuan24/hawkeye)
+                     * 连续多次写入时, 每次写入16个测试数据, 平均耗时11ms.
+                     *
+                     * 确切的说, 我会考虑将这个值交给用户自行设置, 因为每台机子的性能不同, 这个值应该参考实际环境
+                     */
+                    Thread.sleep(15);
                     logRepository.addDocuments(logDocumentList);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -152,36 +166,40 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
         synchronized (this) {
             absorbLogThreadCount -= 1;
         }
+        logger.debug("absorbLogThreadCount:{}", absorbLogThreadCount);
     }
 
-
-    //feature: 搜索功能待实现
+    @Override
     public void searchTest(String key) {
         QueryTemplateBuilder queryTemplateBuilder = new QueryTemplateBuilder() {
             @Override
             protected List<Term> parseMustKey(String s) {
                 return null;
             }
-
             @Override
             protected List<Term> parseFilterKey(String s) {
                 return null;
             }
-
             @Override
             protected List<Term> parseShouldListKey(String s) {
                 List<Term> termList = new ArrayList<>();
                 termList.add(new Term(LogRepository.messageKey, s));
                 return termList;
             }
-
             @Override
             protected List<Term> parseMustNotKey(String s) {
                 return null;
             }
         };
-//        PagingQuery pagingQuery = new PagingQuery(queryTemplateBuilder.fuzzyQuery("key"), 1, 10, true);
-//        PagingQueryResult<>  logRepository.pagingSearch(pagingQuery);
+
+        try {
+            PagingQuery pagingQuery = new PagingQuery(queryTemplateBuilder.fuzzyQuery(key), 1, 10, true);
+            PagingQueryResult<LogDocument> result = logRepository.pagingSearch(pagingQuery);
+
+            logger.info(JSON.toJSONString(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

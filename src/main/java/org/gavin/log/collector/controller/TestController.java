@@ -1,6 +1,7 @@
 package org.gavin.log.collector.controller;
 
 import org.gavin.log.collector.service.TestServiceImpl;
+import org.gavin.log.collector.service.log.ILogRepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,10 +23,14 @@ public class TestController {
 
     @Autowired
     private TestServiceImpl testService;
+    @Autowired
+    private ILogRepositoryService repositoryService;
 
-    @RequestMapping(value = "/log", method = RequestMethod.GET)
-    public String server() throws Exception {
-        return "0";
+    @RequestMapping(value = "/searchLog", method = RequestMethod.GET)
+    public String searchLog(String key) throws Exception {
+        if (key == null || key.length() == 0) return "关键字无效";
+        repositoryService.searchTest(key);
+        return "已搜索";
     }
 
 }

@@ -25,4 +25,9 @@ public interface ILogRepositoryService {
      * 暂停log收集与index化的进程, 这里是一个通知, 内部会异步暂停
      */
     void pause();
+
+    /**
+     * 模糊搜索, 作为测试
+     */
+    void searchTest(String key);
 }
