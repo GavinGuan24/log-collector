@@ -30,24 +30,26 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
 
     private static Logger logger = LoggerFactory.getLogger(LogRepositoryServiceImpl.class);
 
-    @Value("${ymlConfig.hawkeyeRepositoryPath}")
-    private String repositoryPath;
-    @Value("${ymlConfig.absorbLogThreadSize}")
-    private Integer absorbLogThreadSize;
-
-    private boolean needShutdown;
-    private int absorbLogThreadCount;
-
-
     @Autowired
+    //日志接收者
     private LogReceiver logReceiver;
 
+    @Value("${ymlConfig.hawkeyeRepositoryPath}")
+    //日志 index化 仓库
+    private String repositoryPath;
     private LogRepository logRepository;
+
+    //状态值
+    private boolean needShutdown;       //用于传递信息: 需要永久停用服务
+    private int absorbLogThreadCount;   //记录日志index化线程总数, 最大值已被锁定为 2, 详见 startRunLoop() 方法
+    private boolean pauseCollect;       //当该值为 true, 即刻开始, absorbLogBuffer() 内对日志信息的处理操作变为 "丢弃所有日志信息"
+
 
 
     public LogRepositoryServiceImpl() {
         this.needShutdown = false;
         this.absorbLogThreadCount = 0;
+        this.pauseCollect = false;
     }
 
     @Override
@@ -82,18 +84,24 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
                 logDocumentList = logReceiver.pollLogs(64);
             }
         }
-        //正确关闭 logRepository
-        //feature: 正确开启与关闭待实现
+        //关闭 logRepository
+        try {
+            logRepository.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
+    //继续日志服务
     public void resume() {
-        //feature: 继续日志服务待实现
+        pauseCollect = false;
     }
 
     @Override
+    //暂停日志服务
     public void pause() {
-        //feature: 暂停日志服务待实现
+        pauseCollect = true;
     }
 
     @PostConstruct
@@ -103,8 +111,9 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
             return;
         }
         try {
-            //这里传入的repositoryPath, 这个文件夹下如果有其他文件或writeLock, 会无法初始化, 这个问题下个版本解决吧
-            //feature: 正确开启与关闭待实现
+            //这里传入的repositoryPath, 如果正在被另一个程序使用, 未测试过 "读取操作" 是否可用, "写入操作" 是一定会出现冲突的
+            //如果以后没有需求, 这里就不考虑同时被几个同类型的程序使用的情况
+            //logRepository 没有 logRepository.close() 时, 如果此时所有indexWrite操作均已完毕, 下次也可以继续使用
             logRepository = new LogRepository(repositoryPath);
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,45 +121,37 @@ public class LogRepositoryServiceImpl implements ILogRepositoryService {
             return;
         }
 
-        //启动至少 2个线程处理 logReceiver 中的日志
-        //充分利用 logReceiver.pollLogs() 与 logRepository.addDocuments()的时间差
-        //logRepository.addDocuments() 是锁同步的, 是日志写入的硬瓶颈, 不可被优化
-        if (!(absorbLogThreadSize != null && absorbLogThreadSize >= 2)) absorbLogThreadSize = 2;
-        for (int i = 0; i < absorbLogThreadSize; i++) {
-            new Thread(this::absorbLogBuffer).start();
-        }
+        //启动 2 个线程处理 logReceiver 中的日志, 选择 "2 个" 的理由:
+        //1. 充分利用 logReceiver.pollLogs() 与 logRepository.addDocuments()的时间差
+        //2. logRepository.addDocuments() 测试时耗时是 logReceiver.pollLogs() 10+倍
+        //3. 虽然logRepository.addDocuments() 是锁同步的, 但其实内部写入文件才是硬瓶颈, 且不可被优化
+        //   而 logReceiver.logBuffer 的内容是一直被消耗的, 纵使其短期内内容爆炸
+        //   logReceiver.pollLogs() 的调用耗时也大概率的不及logRepository.addDocuments()的调用耗时 久
+        new Thread(this::absorbLogBuffer).start();
+        new Thread(this::absorbLogBuffer).start();
     }
 
-    private void incrementAbsorbLogCoreThreadCount() {
+    //logRepository.addDocuments 是运行瓶颈, 且无法优化
+    //尝试获取多个的文档 (一次性写入更多个会提高执行效率)
+    private void absorbLogBuffer() {
         synchronized (this) {
             absorbLogThreadCount += 1;
         }
-    }
-
-    private void decrementAbsorbLogCoreThreadCount() {
-        synchronized (this) {
-            absorbLogThreadCount -= 1;
-        }
-    }
-
-    //该方法的调用使用了最少2个线程
-    //logRepository.addDocuments方法是锁同步的, 如果只用1个线程,
-    private void absorbLogBuffer() {
-        incrementAbsorbLogCoreThreadCount();
-        while (!needShutdown) {
-            if (logReceiver != null) {
-                //尝试获取8条log数据, 并index化
-                List<LogDocument> logDocumentList = logReceiver.pollLogs(8);
-                if (logDocumentList.size() > 0) {
-                    try {
-                        logRepository.addDocuments(logDocumentList);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+        if (logReceiver != null) {
+            while (!needShutdown) {
+                //尝试获取 64 条log数据, 并index化
+                List<LogDocument> logDocumentList = logReceiver.pollLogs(64);
+                if (pauseCollect) continue;
+                try {
+                    logRepository.addDocuments(logDocumentList);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
-        decrementAbsorbLogCoreThreadCount();
+        synchronized (this) {
+            absorbLogThreadCount -= 1;
+        }
     }
 
 
